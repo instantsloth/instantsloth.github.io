@@ -192,7 +192,7 @@ _.contains = function(array, value) {
 */
 _.each = function(collection, func) {
     if (Array.isArray(collection)) {
-        for (var i = 0; i <collection.length; i++) {
+        for (var i = 0; i < collection.length; i++) {
         func(collection[i], i, collection)
     }
     } else if (typeof collection === 'object') {
@@ -206,13 +206,22 @@ _.each = function(collection, func) {
 *   1) An array
 * Objectives:
 *   1) Return a new array of all elements from <array> with duplicates removed
-*   2) Use _.indexOf() from above
+*   2) Use _.indexOf() fro m above
 * Examples:
 *   _.unique([1,2,2,4,5,6,5,2]) -> [1,2,4,5,6]
 */
 
-_.unique = function(array) {
-    
+
+_.unique = function(array){
+   //make new array to hold the first instance of all values in array
+   let noDup = [];
+   //loop through array
+   for(let i=0; i < array.length; i++){
+      //if the value in the original array is not yet in the new array .push it into the array
+      if ( _.indexOf(noDup, array[i]) === -1){
+           noDup.push(array[i]);
+       }
+   }return noDup
 }
 
 /** _.filter
@@ -231,19 +240,18 @@ _.unique = function(array) {
 *   use _.each in your implementation
 */
 
+
+
 _.filter = function(array, isFunc) {
-    //new array to hold stuff that returns true
-    let newArray = [];
-    //  the element, its index, <array>
-    //_.each if <collection> is an array, call <function> once for each element with the arguments: the element, it's index, <collection>
-    for (let i = 0; i < array.length; i++) {
-        if (isFunc(array[i], i, array)) {
-        newArray.push(array[i])
-    }
-    } return newArray
+  let newArray = [];
+  _.each(array, function(value, index, list) {
+    if (isFunc(value, index, list)){
+        newArray.push(value)};
+  });
+  return newArray;
 }
 
-//try it with each
+
 
 /** _.reject
 * Arguments:
@@ -295,8 +303,6 @@ _.reject = function(bigArray, isFunc) {
 
 _.partition = function (array,func) {
     let partitionArray = [_.filter(array,func), _.reject(array,func)]
- // partitionArray.push(_.filter(array,func));
-   //artitionArray.push(_.reject(array,func));
     return partitionArray;
 }
 
@@ -316,10 +322,19 @@ _.partition = function (array,func) {
 *   _.map([1,2,3,4], function(e){return e * 2}) -> [2,4,6,8]
 */
 _.map = function(collection, func) {
-    let newArray = []
-    newArray.push(_.each(collection, func));
-    return newArray
+    let newArray = [];
+        if (Array.isArray(collection)) {
+        for (var i = 0; i < collection.length; i++) {
+        newArray.push(func(collection[i], i, collection))
+        //returnArray.push(func(collection[i], i, collection));
+        } 
+        }else if (typeof collection === 'object') {
+        for (var key in collection) {
+            newArray.push(func(collection[key], key, collection))
+        }
+        } return newArray;
 }
+
 
 
 /** _.pluck
@@ -332,6 +347,17 @@ _.map = function(collection, func) {
 * Examples:
 *   _.pluck([{a: "one"}, {a: "two"}], "a") -> ["one", "two"]
 */
+
+_.pluck = function(collection, property){
+    let returnArray = [];
+  for(let i=0; i < collection.length; i++) {
+           _.map(collection[i], function(property){
+                   if(typeof property === 'string' ){
+                     returnArray.push(property)
+                   }
+        })
+} return(returnArray)
+ }
 
 
 /** _.every
@@ -355,6 +381,24 @@ _.map = function(collection, func) {
 *   _.every([1,2,3], function(e){return e % 2 === 0}) -> false
 */
 
+_.every = function(collection, isFunc) {
+    let result = false;
+    if (typeof isFunc !== 'function') {
+    _.each(collection, function(value){
+        if(value === true){
+        result = true;
+    };
+    })
+    return result;}
+    result = true
+    _.each(collection, function(value, index, collection) {
+        if(!isFunc(value, index, collection)) {
+            result = false;
+        }
+    })
+    return result;
+}
+
 
 /** _.some
 * Arguments:
@@ -377,6 +421,24 @@ _.map = function(collection, func) {
 *   _.some([1,2,3], function(e){return e % 2 === 0}) -> true
 */
 
+_.some = function(collection, func) {
+    let result = false;
+    if (typeof func !== 'function') {
+    _.each(collection, function(value, index, collection){
+        if(value === true){
+        result = true;
+    };
+    })
+    return result;}
+     _.each(collection, function(value, index, collection) {
+        if (func(value, index, collection)){
+            result = true;
+        }
+   
+})
+    return result
+}
+
 
 /** _.reduce
 * Arguments:
@@ -397,6 +459,34 @@ _.map = function(collection, func) {
 *   _.reduce([1,2,3], function(previousSum, currentValue, currentIndex){ return previousSum + currentValue }, 0) -> 6
 */
 
+// _.reduce = function(array, isFunc, seed){ //seed represents previous result
+//      _.each(array, function(value, index, collection) {
+// }
+
+
+_.reduce = function(array, isFunc, seed){
+  var seedUndefined = arguments.length < 3; //true or false
+  _.each(array, function(value, index, collection){
+    if(seedUndefined) {
+    seedUndefined = false;
+      seed = value;
+    } else seed = isFunc(seed, value, index, collection);
+  });
+  return seed;
+}
+
+
+
+// _.reduce = function(list, iteratee, memo){
+//   var memoUndefined = arguments.length < 3;
+//   _.each(list, function(elem, index, list){
+//     if(memoUndefined) {
+//       memoUndefined = false;
+//       memo = elem;
+//     } else memo = iteratee(memo, elem, index, list);
+//   });
+//   return memo;
+// }
 
 /** _.extend
 * Arguments:
@@ -412,6 +502,21 @@ _.map = function(collection, func) {
 *   _.extend(data, {b:"two"}); -> data now equals {a:"one",b:"two"}
 *   _.extend(data, {a:"two"}); -> data now equals {a:"two"}
 */
+
+// _.extend = function(obj1, obj2){
+// let args = Array.from(arguments); //args is an array of objects
+// for (let i = 1; i<args.length; i++) { //ignore the first object, start at 2nd object and loop
+//     Object.assign(obj1,args[i]) //assign each object to first object
+// } return obj1; //return first object once loop is done
+// }
+
+_.extend = function(obj1, obj2){
+    let args = Array.from(arguments);
+    _.each(args, function(value, index, list) {
+        Object.assign(obj1,value)
+}) 
+return obj1
+}
 
 //////////////////////////////////////////////////////////////////////
 // DON'T REMOVE THIS CODE ////////////////////////////////////////////
